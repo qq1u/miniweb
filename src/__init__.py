@@ -4,7 +4,6 @@ import json
 import socket
 import threading
 from functools import wraps
-from typing import Callable, Any
 from concurrent.futures import ThreadPoolExecutor
 
 CONTENT_TYPE = 'Content-Type'
@@ -38,6 +37,11 @@ class Request:
         self.headers = headers
         self.body = body
         self.ip_port = ip_port
+        self.json = self.str2dict()
+
+    def str2dict(self):
+        if self.headers.get(CONTENT_TYPE).startswith('application/json'):
+            return json.loads(self.body)
 
 
 class Response:
@@ -64,6 +68,7 @@ class ViewFunction:
 
 
 class Method:
+
     GET = 'GET'
     POST = 'POST'
     PUT = 'PUT'
@@ -81,9 +86,9 @@ class Application:
         if methods is None:
             methods = [Method.GET]
 
-        def decorator(func: Callable):
+        def decorator(func):
             @wraps(func)
-            def wrapper(*args: Any, **kwargs: Any):
+            def wrapper(*args, **kwargs):
                 return func(*args, **kwargs)
 
             self.url_func_map[path] = ViewFunction(methods, func)

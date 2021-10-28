@@ -9,6 +9,7 @@ Request
     headers
     body
     ip_port
+    json
 
 Response
     body
