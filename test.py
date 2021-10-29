@@ -1,6 +1,8 @@
 """
 为什么async_requests()，调用requests的请求会出现请求丢失请求体的情况
     看服务端的example1.py里的parse error: 可以看出，都是丢失请求体。
+
+sync_requests()，同步情况下是正常的
 """
 import json
 import socket
@@ -49,9 +51,10 @@ def async_requests(times=1000):
 
 def sync_requests(times=100):
     for _ in range(times):
-        async_requests_responses.append(request())
-    print(f'total request times: {times}, responses: {len(async_requests_responses)}')
+        sync_requests_responses.append(request())
+    print(f'total request times: {times}, responses: {len(sync_requests_responses)}')
 
 
 if __name__ == '__main__':
     async_requests()
+    sync_requests()
