@@ -145,7 +145,7 @@ class WebServer:
         try:
             http_local.request = self.parser_request(request_byte.decode('utf-8'), ip_port)
         except Exception as e:
-            print('parse error:', e)
+            print(f'parse error: request_byte.length: {len(request_byte)}, {request_byte}', e)
         else:
             response = application()
             _socket.send(response.encode('utf-8'))
