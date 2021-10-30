@@ -1,6 +1,7 @@
 # miniweb
-
-## 简易的Web框架
+    简易的Web框架
+ 
+## Request、Response
 ```
 Request
     method
