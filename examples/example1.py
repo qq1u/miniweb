@@ -5,7 +5,7 @@ app = Application()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    print(request.json)
+    print('debug', "{}".format(request.json))
     return f'Hello World, from: {request.ip_port}'
 
 

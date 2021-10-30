@@ -58,4 +58,4 @@ def sync_requests(times=100):
 if __name__ == '__main__':
     # async_requests()
     # sync_requests()
-    async_requests(10)
+    async_requests(1)
