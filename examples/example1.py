@@ -1,4 +1,4 @@
-from src import Application, Response, request, WebServer
+from src import Application, Response, request
 
 app = Application()
 
@@ -20,4 +20,4 @@ def response():
 
 
 if __name__ == '__main__':
-    WebServer().run(app)
+    app.run()
