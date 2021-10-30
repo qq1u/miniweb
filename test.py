@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import requests
 
-hello_world = json.dumps({"Hello": "World"})
+hello_world = {"Hello": "World"}
 sync_requests_responses = []
 async_requests_responses = []
 async_socket_request_responses = []
@@ -56,5 +56,6 @@ def sync_requests(times=100):
 
 
 if __name__ == '__main__':
-    async_requests()
-    sync_requests()
+    # async_requests()
+    # sync_requests()
+    async_requests(10)

@@ -2,6 +2,7 @@
 
 import json
 import socket
+import logging
 import threading
 from functools import wraps
 from concurrent.futures import ThreadPoolExecutor
@@ -30,10 +31,10 @@ class Proxy:
 
 
 class Request:
-    def __init__(self, method, path, version, headers, body, ip_port):
+    def __init__(self, method, path, protocol_version, headers, body, ip_port):
         self.method = method
         self.path = path
-        self.version = version
+        self.protocol_version = protocol_version
         self.headers = headers
         self.body = body
         self.ip_port = ip_port
@@ -41,7 +42,10 @@ class Request:
 
     def str2dict(self):
         if self.headers.get(CONTENT_TYPE).startswith('application/json'):
-            return json.loads(self.body)
+            return json.loads(self.body.decode('utf-8'))
+
+    def __repr__(self):
+        return '<Request: %s>' % self.__dict__
 
 
 class Response:
@@ -51,7 +55,7 @@ class Response:
         self.status_code = status_code
 
     def get_str(self):
-        response_line = f'{http_local.request.version} {self.status_code} OK\r\n'
+        response_line = f'{http_local.request.protocol_version} {self.status_code} OK\r\n'
         if isinstance(self.body, dict):
             self.body = Util.dict2str(self.body)
             self.headers[CONTENT_TYPE] = JSON_TYPE
@@ -140,12 +144,11 @@ class WebServer:
                 pool.submit(self.service_client, new_socket, ip_port, application)
 
     def service_client(self, _socket, ip_port, application: Application):
-        print(f'from {ip_port}')
-        request_byte = _socket.recv(MAX_SIZE)
         try:
-            http_local.request = self.parser_request(request_byte.decode('utf-8'), ip_port)
+            content = self.receive(_socket, ip_port)
+            http_local.request = content
         except Exception as e:
-            print(f'parse error: request_byte.length: {len(request_byte)}, {request_byte}', e)
+            print(f'parse error', e)
         else:
             response = application()
             _socket.send(response.encode('utf-8'))
@@ -153,15 +156,24 @@ class WebServer:
             _socket.close()
 
     @staticmethod
-    def parser_request(request_str, ip_port):
-        header, body = request_str.split('\r\n\r\n')
-        request_line, *headers = header.split('\r\n')
-        method, path, version = request_line.split(' ')
-        headers_dict = {}
-        for header in headers:
-            k, v = header.split(':', maxsplit=1)
-            headers_dict[k.strip()] = v.strip()
-        return Request(method, path, version, headers_dict, body, ip_port)
+    def receive(_socket, ip_port):
+        try:
+            content = _socket.recv(MAX_SIZE)
+            line_header, body = content.split(b'\r\n\r\n')
+            line, *headers_raw = line_header.split(b'\r\n')
+            headers = {}
+            for header in headers_raw:
+                k, v = header.decode('utf-8').split(':', maxsplit=1)
+                headers[k] = v.strip()
+            method, path, protocol_version = line.decode('utf-8').split(' ')
+            content_length = int(headers.get('Content-Length', 0))
+            while len(body) < content_length:
+                # body += socket_.recv(content_length - len(body), socket.MSG_WAITALL)
+                body += _socket.recv(MAX_SIZE)
+            return Request(method, path, protocol_version, headers, body, ip_port)
+        except Exception as e:
+            logging.error(e, exc_info=True)
+            raise e
 
 
 MAX_SIZE = 1024 * 4
