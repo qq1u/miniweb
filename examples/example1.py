@@ -5,7 +5,6 @@ app = Application()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    print('debug', "{}".format(request.json))
     return f'Hello World, from: {request.ip_port}'
 
 
@@ -17,6 +16,20 @@ def json():
 @app.route('/response')
 def response():
     return Response('Hello Response!')
+
+
+@app.route('/headers')
+def get_headers():
+    return {
+        'data': request.headers
+    }
+
+
+@app.route('/args')
+def get_args():
+    return {
+        'data': request.args
+    }
 
 
 if __name__ == '__main__':

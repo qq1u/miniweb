@@ -56,5 +56,5 @@ class WebServer:
                 body += _socket.recv(MAX_SIZE)
             return Request(method, path, protocol_version, headers, body, ip_port)
         except Exception as e:
-            logging.error(e, exc_info=True)
+            logging.exception(e)
             raise e
