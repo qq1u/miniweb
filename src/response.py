@@ -1,4 +1,3 @@
-from .proxy import http_local
 from .utility import dict2str
 from .constants import HeaderKey, ContentType, ContentTypeCharset
 
@@ -9,8 +8,8 @@ class Response:
         self.headers = headers or {HeaderKey.CONTENT_TYPE: ContentType.HTML}
         self.status_code = status_code
 
-    def get_str(self):
-        response_line = f'{http_local.request.protocol_version} {self.status_code} OK\r\n'
+    def get_str(self, request):
+        response_line = f'{request.protocol_version} {self.status_code} OK\r\n'
         if isinstance(self.body, dict):
             self.body = dict2str(self.body)
             self.headers[HeaderKey.CONTENT_TYPE] = ContentTypeCharset.JSON

@@ -1,11 +1,10 @@
 # encoding: utf-8
 
-__all__ = ['Application', 'WebServer', 'Request', 'Response', 'request']
+__all__ = ['Application', 'AsyncServer', 'Request', 'Response']
 
 from .request import Request
-from .server import WebServer
+from .async_server import AsyncServer
 from .response import Response
-from .proxy import Proxy, request
 from .application import Application
 
 
@@ -18,4 +17,4 @@ if __name__ == '__main__':
         return 'Hello World'
 
 
-    WebServer().run(app)
+    AsyncServer().run(app)

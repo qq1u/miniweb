@@ -1,9 +1,10 @@
+import asyncio
 from functools import wraps
 
-from .proxy import http_local
+from .request import Request
 from .utility import dict2str
 from .response import Response
-from .server import WebServer
+from .async_server import AsyncServer
 from .constants import HeaderKey, ContentTypeCharset
 
 
@@ -41,18 +42,23 @@ class Application:
 
         return decorator
 
-    def dispatch(self):
-        view_func = self.url_func_map.get(http_local.request.path)
+    async def dispatch(self, request: Request):
+        view_func = self.url_func_map.get(request.path)
         if not view_func:
             return self.http_404
         methods = view_func.methods
-        if http_local.request.method not in methods:
+        if request.method not in methods:
             return self.http_405
-        return view_func.function()
 
-    def __call__(self):
+        func = view_func.function
+        if asyncio.iscoroutinefunction(func):
+            return await func(request)
+
+        return func(request)
+
+    async def __call__(self, request: Request):
         try:
-            response = self.dispatch()
+            response = await self.dispatch(request)
             if isinstance(response, str):
                 response = Response(response)
             elif isinstance(response, dict):
@@ -62,7 +68,7 @@ class Application:
         except Exception as e:
             print('Server Internal Error', e)
             response = self.http_500
-        return response.get_str()
+        return response.get_str(request)
 
     def run(self, host='', port=8000):
-        WebServer(host=host, port=port).run(self)
+        AsyncServer(host=host, port=port).run(self)
