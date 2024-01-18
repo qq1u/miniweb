@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from .request import Request
 from .proxy import http_local
 from .utility import IgnoreCaseDict
-from .constants import MAX_SIZE, DEFAULT_ENCODE, HeaderKey
+from .constants import MAX_SIZE, DEFAULT_ENCODE
 
 
 class WebServer:
@@ -39,22 +39,30 @@ class WebServer:
         finally:
             _socket.close()
 
-    @staticmethod
-    def receive(_socket, ip_port):
+    @classmethod
+    def receive(cls, _socket, ip_port):
+        content = b""
+
+        while data := _socket.recv(MAX_SIZE):
+            content += data
+            if len(data) < MAX_SIZE:
+                break
+
         try:
-            content = _socket.recv(MAX_SIZE)
-            line_header, body = content.split(b'\r\n\r\n')
-            line, *headers_raw = line_header.split(b'\r\n')
-            headers = IgnoreCaseDict()
-            for header in headers_raw:
-                k, v = header.decode(DEFAULT_ENCODE).split(':', maxsplit=1)
-                headers[k] = v.strip()
-            method, path, protocol_version = line.decode(DEFAULT_ENCODE).split(' ')
-            content_length = int(headers.get(HeaderKey.CONTENT_LENGTH, 0))
-            while len(body) < content_length:
-                # body += socket_.recv(content_length - len(body), socket.MSG_WAITALL)
-                body += _socket.recv(MAX_SIZE)
-            return Request(method, path, protocol_version, headers, body, ip_port)
+            method, path, protocol_version, headers, body = cls.parse(content)
         except Exception as e:
             logging.exception(e)
             raise e
+        else:
+            return Request(method, path, protocol_version, headers, body, ip_port)
+
+    @staticmethod
+    def parse(content):
+        line_header, body = content.split(b'\r\n\r\n')
+        line, *headers_raw = line_header.split(b'\r\n')
+        headers = IgnoreCaseDict()
+        for header in headers_raw:
+            k, v = header.decode(DEFAULT_ENCODE).split(':', maxsplit=1)
+            headers[k] = v.strip()
+        method, path, protocol_version = line.decode(DEFAULT_ENCODE).split(' ')
+        return method, path, protocol_version, headers, body
