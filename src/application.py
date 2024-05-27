@@ -8,10 +8,10 @@ from .constants import HeaderKey, ContentTypeCharset
 
 
 class Method:
-    GET = 'GET'
-    POST = 'POST'
-    PUT = 'PUT'
-    DELETE = 'DELETE'
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
 
 
 class ViewFunction:
@@ -23,9 +23,15 @@ class ViewFunction:
 class Application:
     def __init__(self):
         self.url_func_map = {}
-        self.http_404 = Response('<html><body>Not Found 404</body></html>', status_code=404)
-        self.http_405 = Response('<html><body>Method Not Allowed</body></html>', status_code=405)
-        self.http_500 = Response('<html><body>Server Internal Error</body></html>', status_code=500)
+        self.http_404 = Response(
+            "<html><body>Not Found 404</body></html>", status_code=404
+        )
+        self.http_405 = Response(
+            "<html><body>Method Not Allowed</body></html>", status_code=405
+        )
+        self.http_500 = Response(
+            "<html><body>Server Internal Error</body></html>", status_code=500
+        )
 
     def route(self, path, methods=None):
         if methods is None:
@@ -56,13 +62,16 @@ class Application:
             if isinstance(response, str):
                 response = Response(response)
             elif isinstance(response, dict):
-                response = Response(dict2str(response), {HeaderKey.CONTENT_TYPE: ContentTypeCharset.JSON})
+                response = Response(
+                    dict2str(response),
+                    {HeaderKey.CONTENT_TYPE: ContentTypeCharset.JSON},
+                )
             if not isinstance(response, Response):
-                raise TypeError('Should return Response or dict or str')
+                raise TypeError("Should return Response or dict or str")
         except Exception as e:
-            print('Server Internal Error', e)
+            print("Server Internal Error", e)
             response = self.http_500
         return response.get_str()
 
-    def run(self, host='', port=8000):
+    def run(self, host="", port=8000):
         WebServer(host=host, port=port).run(self)

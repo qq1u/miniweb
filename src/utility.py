@@ -30,4 +30,8 @@ class IgnoreCaseDict(MutableMapping):
 
 
 def dict2str(obj, ensure_ascii=False):
-    return json.dumps(obj, ensure_ascii=ensure_ascii, default=lambda o: dict(o) if isinstance(o, IgnoreCaseDict) else o)
+    return json.dumps(
+        obj,
+        ensure_ascii=ensure_ascii,
+        default=lambda o: dict(o) if isinstance(o, IgnoreCaseDict) else o,
+    )

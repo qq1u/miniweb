@@ -7,11 +7,11 @@ class Proxy:
         self.attribute = attribute
 
     def __getattribute__(self, item):
-        local = super().__getattribute__('local')
-        attribute = super().__getattribute__('attribute')
+        local = super().__getattribute__("local")
+        attribute = super().__getattribute__("attribute")
         obj = getattr(local, attribute)
         return getattr(obj, item)
 
 
 http_local = threading.local()
-request = Proxy(http_local, 'request')
+request = Proxy(http_local, "request")

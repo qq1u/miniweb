@@ -18,8 +18,8 @@ class Request:
         self.args = parse_qs(split.query)
 
     def str2dict(self):
-        if self.headers.get(HeaderKey.CONTENT_TYPE, '').startswith(ContentType.JSON):
+        if self.headers.get(HeaderKey.CONTENT_TYPE, "").startswith(ContentType.JSON):
             return json.loads(self.body.decode(DEFAULT_ENCODE))
 
     def __repr__(self):
-        return '<Request: %s>' % self.__dict__
+        return "<Request: %s>" % self.__dict__
